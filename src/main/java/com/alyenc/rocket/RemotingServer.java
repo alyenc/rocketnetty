@@ -1,6 +1,6 @@
 package com.alyenc.rocket;
 
-import com.alyenc.rocket.netty.NettyRequestProcessor;
+import com.alyenc.rocket.netty.NettyProcessor;
 import com.alyenc.rocket.protocol.RemotingMessage;
 import io.netty.channel.Channel;
 
@@ -38,7 +38,7 @@ public interface RemotingServer {
      * @param processor
      * @param executor
      */
-    void registerProcessor(final int requestCode, final NettyRequestProcessor processor,
+    void registerProcessor(final int requestCode, final NettyProcessor processor,
                            final ExecutorService executor);
 
     /**
@@ -48,7 +48,7 @@ public interface RemotingServer {
      * @param processor
      * @param executor
      */
-    void registerDefaultProcessor(final NettyRequestProcessor processor, final ExecutorService executor);
+    void registerDefaultProcessor(final NettyProcessor processor, final ExecutorService executor);
 
     /**
      * @description 远程同步调用

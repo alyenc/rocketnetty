@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class NettyRemotingClient extends AbstractNettyRemotingServer implements RemotingClient {
+public class NettyRemotingClient extends AbstractNettyRemoting implements RemotingClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyRemotingClient.class);
 
@@ -53,6 +53,7 @@ public class NettyRemotingClient extends AbstractNettyRemotingServer implements 
         this.eventLoopGroupWorker = new NioEventLoopGroup(1, new ThreadFactory() {
             private AtomicInteger threadIndex = new AtomicInteger(0);
 
+            @Override
             public Thread newThread(Runnable r) {
                 return new Thread(r, String.format("NettyClientSelector_%d", this.threadIndex.incrementAndGet()));
             }
@@ -61,12 +62,14 @@ public class NettyRemotingClient extends AbstractNettyRemotingServer implements 
         this.publicExecutor = Executors.newFixedThreadPool(publicThreadNum, new ThreadFactory() {
             private AtomicInteger threadIndex = new AtomicInteger(0);
 
+            @Override
             public Thread newThread(Runnable r) {
                 return new Thread(r, "NettyClientPublicExecutor_" + this.threadIndex.incrementAndGet());
             }
         });
     }
 
+    @Override
     public void start() {
         this.defaultEventExecutorGroup = new DefaultEventExecutorGroup(
                 nettyClientConfig.getClientWorkerThreads(),
@@ -74,6 +77,7 @@ public class NettyRemotingClient extends AbstractNettyRemotingServer implements 
 
                     private AtomicInteger threadIndex = new AtomicInteger(0);
 
+                    @Override
                     public Thread newThread(Runnable r) {
                         return new Thread(r, "NettyClientWorkerThread_" + this.threadIndex.incrementAndGet());
                     }
@@ -93,25 +97,25 @@ public class NettyRemotingClient extends AbstractNettyRemotingServer implements 
                                 defaultEventExecutorGroup,
                                 new NettyEncoder(),
                                 new NettyDecoder(),
-                                new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),
-                                new NettyConnectManageHandler(),
+                                //new IdleStateHandler(0, 0, nettyClientConfig.getClientChannelMaxIdleTimeSeconds()),
+                               // new NettyConnectManageHandler(),
                                 new NettyClientHandler());
                     }
                 });
 
     }
 
+    @Override
     public void shutdown() {
 
     }
 
+    @Override
     public RemotingMessage invokeSync(String addr, RemotingMessage request, long timeoutMillis) throws Exception {
         final Channel channel = this.getAndCreateChannel(addr);
         if (channel != null && channel.isActive()) {
             try {
-
-                RemotingMessage response = this.invokeSyncImpl(channel, request, timeoutMillis);
-                return response;
+                return this.invokeSyncImpl(channel, request, timeoutMillis);
             } catch (Exception e) {
                 logger.warn("invokeSync: send request exception, so close the channel[{}]", addr);
                 this.closeChannel(addr, channel);
@@ -123,16 +127,18 @@ public class NettyRemotingClient extends AbstractNettyRemotingServer implements 
         }
     }
 
-    public void registerProcessor(int requestCode, NettyRequestProcessor processor, ExecutorService executor) {
+    @Override
+    public void registerProcessor(int requestCode, NettyProcessor processor, ExecutorService executor) {
         ExecutorService executorThis = executor;
         if (null == executor) {
             executorThis = this.publicExecutor;
         }
 
-        Pair<NettyRequestProcessor, ExecutorService> pair = new Pair<NettyRequestProcessor, ExecutorService>(processor, executorThis);
+        Pair<NettyProcessor, ExecutorService> pair = new Pair<NettyProcessor, ExecutorService>(processor, executorThis);
         this.procMap.put(requestCode, pair);
     }
 
+    @Override
     public void setCallbackExecutor(ExecutorService callbackExecutor) {
         this.callbackExecutor = callbackExecutor;
     }

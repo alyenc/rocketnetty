@@ -3,7 +3,7 @@ package com.alyenc.rocket.common;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import com.alyenc.rocket.netty.AbstractNettyRemotingServer;
+import com.alyenc.rocket.netty.AbstractNettyRemoting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +15,7 @@ import java.util.Enumeration;
 
 public class RemotingUtil {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractNettyRemotingServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractNettyRemoting.class);
 
     public static String getLocalAddress() {
         try {

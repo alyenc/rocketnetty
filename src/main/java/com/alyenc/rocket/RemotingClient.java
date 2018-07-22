@@ -1,6 +1,6 @@
 package com.alyenc.rocket;
 
-import com.alyenc.rocket.netty.NettyRequestProcessor;
+import com.alyenc.rocket.netty.NettyProcessor;
 import com.alyenc.rocket.protocol.RemotingMessage;
 
 import java.util.concurrent.ExecutorService;
@@ -21,7 +21,7 @@ public interface RemotingClient {
      */
     RemotingMessage invokeSync(final String addr, final RemotingMessage request, final long timeoutMillis) throws Exception;
 
-    void registerProcessor(final int requestCode, final NettyRequestProcessor processor,
+    void registerProcessor(final int requestCode, final NettyProcessor processor,
                            final ExecutorService executor);
 
     void setCallbackExecutor(final ExecutorService callbackExecutor);
